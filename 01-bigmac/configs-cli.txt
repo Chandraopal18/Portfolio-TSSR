@@ -1,0 +1,430 @@
+========================================================
+PROJET BIGMAC - EXTRAITS DE CONFIGURATION CLI
+Formation TSSR - Cisco Packet Tracer
+========================================================
+NOTE : Les identifiants ci-dessous sont fictifs et remplacés
+par des placeholders pour la publication publique.
+Mot de passe original -> remplacé par <password>
+========================================================
+
+
+########################################################
+# SWITCH_BP_RDC (Bâtiment Principal - Rez-de-chaussée)
+########################################################
+
+en
+conf t
+
+vlan 20
+name Ingenieurs
+vlan 30
+name Developpeurs
+vlan 40
+name Marketing
+vlan 66
+name Voix2
+vlan 77
+name Admin2
+
+int range fa0/1-4
+switchport mode access
+switchport access vlan 20
+int fa0/10
+switchport voice vlan 66
+int range fa0/20-21
+switchport mode access
+switchport access vlan 30
+int fa0/12
+switchport voice vlan 66
+int fa0/11
+switchport mode access
+switchport voice vlan 66
+switchport access vlan 40
+int fa0/24
+switchport mode trunk
+switchport trunk allowed vlan 20,30,40,66,77
+
+int vlan 77
+ip add 10.20.0.57 255.255.255.248
+no sh
+exit
+
+hostname Switch_BP_Rdc
+ip domain-name Entreprise
+crypto key generate rsa
+2048
+username admin password <password>
+ip ssh version 2
+line vty 0 2
+login local
+transport input ssh
+exit
+enable password <password>
+end
+
+wr
+
+
+########################################################
+# SWITCH_BP_ETAGE (Bâtiment Principal - Étage)
+########################################################
+
+en
+conf t
+
+vlan 20
+name Ingenieurs
+vlan 30
+name Developpeurs
+vlan 50
+name Direction
+vlan 66
+name Voix2
+vlan 77
+name Admin2
+
+int range fa0/1-3
+switchport mode access
+switchport access vlan 20
+int fa0/12
+switchport voice vlan 66
+int range fa0/20-22
+switchport mode access
+switchport access vlan 30
+int fa0/10
+switchport voice vlan 66
+int fa0/11
+switchport mode access
+switchport voice vlan 66
+switchport access vlan 50
+int fa0/24
+switchport mode trunk
+switchport trunk allowed vlan 20,30,50,66,77
+
+int vlan 77
+ip add 10.20.0.58 255.255.255.248
+no sh
+exit
+
+hostname Switch_BP_Etage
+ip domain-name Entreprise
+crypto key generate rsa
+2048
+username admin password <password>
+ip ssh version 2
+line vty 0 2
+login local
+transport input ssh
+exit
+enable password <password>
+end
+
+wr
+
+
+########################################################
+# SWITCH_CENTRAL (Cœur de réseau - Routage inter-VLAN SVI)
+########################################################
+
+en
+conf t
+vlan 20
+name Ingenieurs
+vlan 30
+name Developpeurs
+vlan 40
+name Marketing
+vlan 50
+name Direction
+vlan 66
+name Voix2
+vlan 77
+name Admin2
+
+int fa0/23
+switchport trunk encapsulation dot1q
+switchport mode trunk
+switchport trunk allowed vlan 20,30,40,66,77
+no sh
+int fa0/24
+switchport trunk encapsulation dot1q
+switchport mode trunk
+switchport trunk allowed vlan 20,30,50,66,77
+no sh
+
+int vlan 20
+ip add 10.20.0.14 255.255.255.240
+ip helper-address 172.16.10.25
+no sh
+int vlan 30
+ip add 10.20.0.22 255.255.255.248
+ip helper-address 172.16.10.25
+no sh
+int vlan 40
+ip add 10.20.0.30 255.255.255.248
+ip helper-address 172.16.10.25
+no sh
+int vlan 50
+ip add 10.20.0.38 255.255.255.248
+ip helper-address 172.16.10.25
+no sh
+int vlan 66
+ip add 10.20.0.62 255.255.255.248
+ip helper-address 172.16.10.26
+no sh
+int vlan 77
+ip add 10.20.0.70 255.255.255.248
+exit
+
+hostname Switch_Central
+ip domain-name Entreprise
+crypto key generate rsa
+2048
+username admin password <password>
+ip ssh version 2
+line vty 0 2
+login local
+transport input ssh
+exit
+enable password <password>
+
+ip routing
+
+int gi0/1
+no switchport
+ip add 192.168.1.1 255.255.255.252
+no sh
+exit
+
+ip route 172.16.10.32 255.255.255.248 192.168.2.2
+ip route 172.16.10.8 255.255.255.248 192.168.2.2
+ip route 172.16.10.24 255.255.255.248 192.168.2.2
+ip route 172.16.10.16 255.255.255.248 192.168.2.2
+ip route 172.16.10.0 255.255.255.248 192.168.2.2
+ip route 0.0.0.0 0.0.0.0 192.168.1.1
+
+end
+wr
+
+
+########################################################
+# SWITCH_INFO (Datacenter)
+########################################################
+
+enable
+conf t
+vlan 10
+name Accueil
+vlan 60
+name Voix
+vlan 70
+name Admin
+vlan 80
+name Support
+vlan 90
+name Serveur
+
+int fa0/12
+switchport voice vlan 60
+int fa0/1
+switchport mode access
+switchport access vlan 70
+int fa0/24
+switchport mode trunk
+switchport trunk allowed vlan 10,60,70,80,90
+int fa0/11
+switchport mode access
+switchport voice vlan 60
+switchport access vlan 80
+int fa0/10
+switchport mode access
+switchport voice vlan 60
+switchport access vlan 80
+int gi0/1
+switchport mode trunk
+switchport trunk allowed vlan 10,60,70
+int fa0/20
+switchport mode access
+switchport access vlan 90
+int fa0/23
+switchport mode access
+switchport access vlan 90
+
+int vlan 70
+ip add 172.16.10.21 255.255.255.248
+no sh
+exit
+
+hostname Switch_Info
+ip domain-name Entreprise
+crypto key generate rsa
+2048
+username admin password <password>
+ip ssh version 2
+line vty 0 2
+login local
+transport input ssh
+exit
+enable password <password>
+end
+
+
+########################################################
+# SWITCH_ACCUEIL (Datacenter)
+########################################################
+
+en
+conf t
+
+vlan 10
+name Accueil
+vlan 60
+name Voix
+vlan 70
+name Admin
+
+int gi0/1
+switchport mode trunk
+switchport trunk allowed vlan 10,60,70
+int fa0/1
+switchport mode access
+switchport voice vlan 60
+switchport access vlan 10
+
+int vlan 70
+ip add 172.16.10.20 255.255.255.248
+no sh
+exit
+
+hostname Switch_Accueil
+ip domain-name Entreprise
+crypto key generate rsa
+2048
+username admin password <password>
+ip ssh version 2
+line vty 0 2
+login local
+transport input ssh
+exit
+enable password <password>
+end
+wr
+
+
+########################################################
+# PARE_FEU_ROAS (Router-on-a-Stick - Routage inter-VLAN Datacenter)
+########################################################
+
+en
+conf t
+
+int fa 1/0.10
+encapsulation dot1Q 10
+ip address 172.16.10.38 255.255.255.248
+ip helper-address 172.16.10.25
+int fa 1/0.60
+encapsulation dot1Q 60
+ip address 172.16.10.6 255.255.255.248
+ip helper-address 172.16.10.26
+int fa 1/0.70
+encapsulation dot1Q 70
+ip address 172.16.10.22 255.255.255.248
+ip helper-address 172.16.10.25
+int fa 1/0.80
+encapsulation dot1Q 80
+ip address 172.16.10.14 255.255.255.248
+ip helper-address 172.16.10.25
+int fa 1/0.90
+encapsulation dot1Q 90
+ip address 172.16.10.30 255.255.255.248
+ip helper-address 172.16.10.25
+int fa1/0
+no sh
+exit
+
+hostname Pare_feu_ROAS
+ip domain-name Entreprise
+crypto key generate rsa
+2048
+username admin password <password>
+ip ssh version 2
+line vty 0 2
+login local
+transport input ssh
+exit
+enable password <password>
+exit
+
+conf t
+
+ip routing
+
+ip route 10.20.0.0 255.255.255.240 192.168.2.1
+ip route 10.20.0.16 255.255.255.248 192.168.2.1
+ip route 10.20.0.24 255.255.255.248 192.168.2.1
+ip route 10.20.0.32 255.255.255.248 192.168.2.1
+ip route 10.20.0.48 255.255.255.240 192.168.2.1
+ip route 10.20.0.64 255.255.255.248 192.168.2.1
+ip route 0.0.0.0 0.0.0.0 192.168.1.1
+
+end
+wr
+
+
+########################################################
+# IPBX (Téléphonie IP - Cisco CallManager Express)
+########################################################
+
+en
+conf t
+
+ip routing
+ip route 172.16.10.0 255.255.255.248 172.16.10.30
+ip route 10.20.0.48 255.255.255.240 172.16.10.30
+
+int fa0/0
+ip add 172.16.10.26 255.255.255.248
+no sh
+exit
+
+ip dhcp pool VOIP
+network 172.16.10.0 255.255.255.248
+default-router 172.16.10.6
+option 150 ip 172.16.10.26
+exit
+
+ip dhcp pool VOIP2
+network 10.20.0.48 255.255.255.240
+default-router 10.20.0.62
+option 150 ip 172.16.10.26
+exit
+
+telephony-service
+max-ephones 10
+max-dn 10
+ip source-address 172.16.10.26 port 2000
+auto assign 1 to 10
+exit
+
+ephone-dn 1
+number 001
+ephone-dn 2
+number 002
+ephone-dn 3
+number 003
+ephone-dn 4
+number 004
+ephone-dn 5
+number 005
+ephone-dn 6
+number 006
+ephone-dn 7
+number 007
+ephone-dn 8
+number 008
+ephone-dn 9
+number 009
+ephone-dn 10
+number 010
+end
+wr
