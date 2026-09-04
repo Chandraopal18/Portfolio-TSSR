@@ -1,63 +1,56 @@
-# Projet VLAN Segmentation — Segmentation réseau et calcul d'adressage
+# Portfolio Réseau — TSSR
 
-**Formation :** TSSR (Technicien Systèmes et Réseaux)
-**Outil :** Cisco Packet Tracer
+Bienvenue sur mon portfolio technique, réalisé dans le cadre de ma formation **TSSR (Technicien Systèmes et Réseaux)**.
 
-## Contexte
+Vous trouverez ci-dessous une sélection de projets réseau réalisés sur **Cisco Packet Tracer**, couvrant la segmentation VLAN, le routage (statique et dynamique), la traduction d'adresses (NAT), la haute disponibilité (agrégation de liens, redondance de passerelle) et la téléphonie IP.
 
-TP de base sur la segmentation réseau par VLAN, associant **calcul d'adressage IP (sous-réseautage)** et **configuration VLAN/trunking** sur trois commutateurs répartis dans trois salles. L'objectif était de partir d'un plan d'adressage global et de le décliner en sous-réseaux minimalistes, un par VLAN.
+Chaque projet dispose de sa propre fiche détaillée : contexte, objectifs, architecture, compétences mobilisées, difficultés rencontrées, ainsi que les fichiers de simulation (`.pkt`) et les configurations CLI complètes.
 
-## Objectifs du TP
+## 👤 À propos
 
-1. Calculer des sous-réseaux à partir d'un plan d'adressage global (`192.168.0.0/16`), avec seulement 2 hôtes utiles par réseau
-2. Créer et nommer les VLANs sur chaque commutateur
-3. Configurer les ports en mode accès (VLAN dédié par poste)
-4. Configurer les liaisons trunk entre commutateurs, en limitant chaque trunk aux seuls VLANs réellement nécessaires
+**Chandra-Dev ARUMUGAM** — actuellement diplômé TSSR (Technicien Systèmes et Réseaux), je recherche une alternance en AIS (Administrateur d'Infrastructures Sécurisées) ou un poste de technicien systèmes et réseaux.
 
-## Architecture
+Passionné par l'infrastructure réseau, j'ai construit tout au long de ma formation une expertise pratique sur Cisco Packet Tracer : segmentation VLAN, routage statique et dynamique (OSPF), NAT, haute disponibilité (EtherChannel, HSRP) et téléphonie IP — que vous pouvez retrouver en détail dans les projets ci-dessous. Je m'intéresse particulièrement à la conception d'architectures réseau robustes et à la sécurisation des infrastructures.
 
-Trois salles, chacune équipée d'un commutateur, reliées en chaîne par des liaisons trunk. Chaque VLAN (Accueil, Atelier, Design) est présent dans deux salles différentes, ce qui impose de faire circuler le bon VLAN sur le bon trunk.
+Disponible pour une alternance à partir de 04/09/2026, je suis ouvert à toute opportunité me permettant d'allier théorie et mise en pratique concrète.
 
-**Plan d'adressage (VLSM /30, 2 hôtes utiles par réseau) :**
+📧 [chandraopal18@gmail.com] · 🔗 [www.linkedin.com/in/chandra-dev-arumugam-61a6793b1]
 
-| VLAN | Service | Réseau | Masque | Plage utile |
-|---|---|---|---|---|
-| 10 | Accueil | 192.168.0.0/30 | 255.255.255.252 | .1 – .2 |
-| 20 | Atelier | 192.168.0.4/30 | 255.255.255.252 | .5 – .6 |
-| 30 | Design | 192.168.0.8/30 | 255.255.255.252 | .9 – .10 |
+## 🧰 Compétences couvertes dans ce portfolio
 
-**Répartition des VLANs par salle :**
+| Domaine | Projets concernés |
+|---|---|
+| Segmentation VLAN & Trunking 802.1Q | Tous les projets |
+| Routage inter-VLAN (SVI, Router-on-a-Stick) | BigMac, OSPF, Agrégation & Redondance |
+| Routage statique multi-sites | NAT, NAT statique / Port Forwarding |
+| Routage dynamique OSPF multi-aires | OSPF |
+| NAT dynamique (PAT / overload) | NAT, NAT statique / Port Forwarding |
+| NAT statique & Port Forwarding | NAT statique / Port Forwarding |
+| Agrégation de liens (EtherChannel / LACP) | Agrégation & Redondance |
+| Redondance de passerelle (HSRP) | Agrégation & Redondance |
+| DHCP Relay | BigMac, NAT, Agrégation & Redondance |
+| Téléphonie IP (VoIP, Cisco CME) | BigMac |
+| Sécurisation des accès (SSH) | BigMac |
 
-| Salle / Switch | Ports accès | VLANs autorisés sur les trunks |
-|---|---|---|
-| Salle 1 (sw-salle1) | Fa0/1 = VLAN 10 (Accueil), Fa0/2 = VLAN 20 (Atelier 1) | Fa0/3 → sw-salle2 : VLAN 10, 20 |
-| Salle 2 (sw-salle2) | Fa0/1 = VLAN 20 (Atelier 2), Fa0/2 = VLAN 30 (Design 1) | Fa0/3 → sw-salle1 : VLAN 10, 20 · Fa0/4 → sw-salle3 : VLAN 10, 30 |
-| Salle 3 (sw-salle3) | Fa0/1 = VLAN 30 (Design 2), Fa0/2 = VLAN 10 (Accueil 2) | Fa0/3 → sw-salle2 : VLAN 10, 30 |
+## 📂 Projets
 
-**Topologie générale :**
+### [01 · BigMac — Architecture réseau d'entreprise multi-sites](./01-bigmac)
+Projet le plus complet : segmentation VLAN sur 2 sites + datacenter, routage inter-VLAN (SVI et Router-on-a-Stick), téléphonie IP, DHCP relay, sécurisation SSH.
 
-![Topologie VLAN Segmentation - vue d'ensemble](topologie-1.png)
+### [02 · NAT surchargé (PAT)](./02-nat_pat)
+Architecture multi-sites avec sortie Internet mutualisée via NAT dynamique overload, ACL de contrôle, routage statique et relais DHCP.
 
-## Compétences techniques mobilisées
+### [02b · NAT statique & Port Forwarding](./02b-nat-statique-portforwarding)
+Complément au projet NAT : publication d'un serveur web interne sur Internet via NAT statique et redirection de port, combiné à du NAT overload et du routage RIP.
 
-- **Calcul de sous-réseaux (VLSM)** : dimensionner un réseau au plus juste (masque /30) quand seuls 2 hôtes sont nécessaires
-- **Création et nommage de VLANs** (`vlan <id>` / `name <nom>`)
-- **Ports en mode accès** : assignation d'un VLAN par port utilisateur (`switchport mode access` / `switchport access vlan`)
-- **Trunking 802.1Q avec restriction de VLANs** : chaque trunk n'autorise que les VLANs qui transitent réellement par ce lien (`switchport trunk allowed vlan`), plutôt que de laisser passer tous les VLANs par défaut — bonne pratique pour limiter le broadcast inutile
-- **Topologie en chaîne (daisy chain)** : compréhension de la propagation d'un VLAN à travers plusieurs commutateurs successifs quand ce VLAN est présent dans des salles non adjacentes
+### [03 · VLAN Segmentation](./03-vlan-segmentation)
+TP fondamental de calcul d'adressage (VLSM) et de configuration VLAN/trunking sur une topologie à trois commutateurs en chaîne.
 
-## Limites du TP
+### [04 · OSPF multi-zones](./04-ospf)
+Déploiement du routage dynamique OSPF sur 4 aires distinctes (backbone + 3 zones), avec routage inter-VLAN sur commutateurs de niveau 3.
 
-Ce TP reste au niveau 2 (commutation) : aucun routage inter-VLAN n'a été configuré (pas de SVI ni de Router-on-a-Stick), les VLANs sont donc isolés entre eux à ce stade. C'est une base volontairement simple avant d'aborder le routage inter-VLAN (voir le projet BigMac pour la suite logique).
-
-## Difficultés rencontrées et solutions
-
-*(à compléter — n'hésite pas à me dire quelles difficultés tu as rencontrées sur ce TP)*
-
-## Fichiers
-
-- `vlan-segmentation.pkt` — Simulation Cisco Packet Tracer complète
-- `configs-cli.txt` — Configuration CLI complète des trois commutateurs
+### [05 · Agrégation de liens & Redondance de passerelle](./05-aggregation-redondance)
+EtherChannel (LACP) sur plusieurs liaisons inter-commutateurs, combiné à une redondance de passerelle HSRP active/passive avec bascule automatique.
 
 ---
-*Projet réalisé dans le cadre de la formation TSSR. Environnement de simulation (Cisco Packet Tracer).*
+*Portfolio en cours de continuation.*
