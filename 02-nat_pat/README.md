@@ -1,181 +1,59 @@
-========================================================
-PROJET NAT - EXTRAITS DE CONFIGURATION CLI
-Formation TSSR - Cisco Packet Tracer
-========================================================
-NOTE : Les switches (Switch2, sw-glgl, SW-DT, Sw-srv, switch4)
-sont laissés en configuration par défaut (aucun VLAN/trunk
-requis pour ce TP centré sur le NAT et le routage) et ne sont
-donc pas détaillés ci-dessous.
-========================================================
+# Projet NAT — Traduction d'adresses réseau (NAT surchargé / PAT)
 
+*Un second projet complémentaire sur le NAT statique et le port forwarding est en préparation pour compléter cette démonstration avec l'exposition ciblée d'un service.*
 
-########################################################
-# BOX (Routeur de sortie Internet - NAT surchargé/PAT)
-########################################################
+**Formation :** TSSR (Technicien Systèmes et Réseaux)
+**Outil :** Cisco Packet Tracer
 
-en
-conf t
+## Contexte
 
-interface GigabitEthernet0/0
- ip address 10.0.2.6 255.255.255.248
- ip nat inside
- duplex auto
- speed auto
- no shutdown
+Mise en place d'un réseau d'entreprise multi-sites simulant une sortie vers Internet via **NAT dynamique surchargé (PAT — Port Address Translation)**, permettant à plusieurs réseaux internes de partager une seule adresse IP publique pour sortir vers le WAN.
 
-interface GigabitEthernet0/1
- ip address 81.250.23.1 255.255.255.0
- ip nat outside
- duplex auto
- speed auto
- no shutdown
+## Objectifs du TP
 
-interface GigabitEthernet0/2
- ip address 192.168.0.1 255.255.255.252
- ip nat inside
- duplex auto
- speed auto
- no shutdown
+1. Concevoir une architecture multi-sites avec un routeur central de distribution
+2. Configurer le NAT surchargé (overload/PAT) sur le routeur de sortie Internet
+3. Restreindre les réseaux autorisés à sortir via une ACL standard
+4. Mettre en place le routage statique entre tous les sites
+5. Configurer le relais DHCP pour les réseaux utilisateurs
+6. Simuler un accès à un service web externe (hors du réseau de l'entreprise)
 
-! Activation du NAT surchargé (PAT) : toutes les adresses
-! autorisées par l'ACL 1 sortent avec l'IP publique de Gi0/1
-ip nat inside source list 1 interface GigabitEthernet0/1 overload
+## Architecture
 
-! Routage statique vers les réseaux internes distants
-ip route 0.0.0.0 0.0.0.0 81.250.23.2
-ip route 192.168.10.0 255.255.255.0 192.168.0.2
-ip route 192.168.20.0 255.255.255.0 192.168.0.2
-ip route 172.16.0.0 255.255.255.252 192.168.0.2
+Le réseau comprend un site "Serveur Web" interne, un cœur de réseau (R-Central) distribuant vers deux sites utilisateurs (Desktop et Laptop), et une sortie Internet simulée (BOX) vers un réseau externe fictif ("glouglou.fr").
 
-! ACL définissant les réseaux internes autorisés à être traduits (NAT)
-access-list 1 permit 192.168.10.0 0.0.0.255
-access-list 1 permit 192.168.20.0 0.0.0.255
-access-list 1 permit 172.16.0.0 0.0.0.3
+**Plan d'adressage :**
 
-end
-wr
+| Réseau | Plage | Équipements |
+|---|---|---|
+| Serveur Web (interne) | 10.0.2.0/29 | Srv-Web (.1), BOX (.6) |
+| Liaison BOX ↔ R-WAN (WAN) | 81.250.23.0/24 | BOX (.1), R-WAN (.2) |
+| Réseau externe simulé (glouglou.fr) | 174.125.30.0/24 | v.glouglou.fr (.1) |
+| Liaison BOX ↔ R-Central | 192.168.0.0/30 | BOX (.1), R-Central (.2) |
+| Liaison R-Central ↔ R-DT | 192.168.0.8/30 | R-Central (.9), R-DT (.10) |
+| Liaison R-Central ↔ R-LT | 192.168.0.4/30 | R-Central (.5), R-LT (.6) |
+| Réseau Desktop | 192.168.10.0/24 | Passerelle R-DT (.254) |
+| Réseau Laptop | 192.168.20.0/24 | Passerelle R-LT (.254) |
+| Serveur interne DHCP/DNS | 172.16.0.0/30 | R-DT (.2), Srv-interne (.1) |
 
+**Topologie générale :**
 
-########################################################
-# R-WAN (Routeur simulant le fournisseur d'accès / Internet)
-########################################################
+![Topologie NAT - partie 1](topologie-1.png)
+![Topologie NAT - partie 2](topologie-2.png)
 
-en
-conf t
+## Compétences techniques mobilisées
 
-interface GigabitEthernet0/0
- ip address 81.250.23.2 255.255.255.0
- duplex auto
- speed auto
- no shutdown
+- **NAT surchargé (PAT)** : traduction de plusieurs adresses internes vers une seule adresse publique via `ip nat inside source list 1 interface GigabitEthernet0/1 overload`
+- **ACL standard** : définition des réseaux autorisés à être traduits (`access-list 1 permit ...`) — ici les réseaux Desktop, Laptop et le sous-réseau serveur interne
+- **Marquage des interfaces NAT** : distinction claire entre interfaces `ip nat inside` (réseaux internes) et `ip nat outside` (côté WAN)
+- **Routage statique multi-sauts** : routes déclarées sur chaque routeur pour joindre les réseaux distants à travers le cœur de réseau R-Central
+- **Relais DHCP** (`ip helper-address`) : les réseaux Desktop et Laptop pointent vers un serveur DHCP centralisé situé sur un autre sous-réseau
+- **Conception d'architecture hub-and-spoke** : R-Central comme point de convergence entre le site serveur, le site desktop et le site laptop
 
-interface GigabitEthernet0/1
- ip address 174.125.30.254 255.255.255.0
- duplex auto
- speed auto
- no shutdown
+## Fichiers
 
-end
-wr
+- `nat.pkt` — Simulation Cisco Packet Tracer complète
+- `configs-cli.txt` — Extraits de configuration CLI (NAT, ACL, routage, DHCP relay)
 
-
-########################################################
-# R-CENTRAL (Cœur de réseau - Distribution vers les sites)
-########################################################
-
-en
-conf t
-
-interface GigabitEthernet0/0
- ip address 192.168.0.9 255.255.255.252
- duplex auto
- speed auto
- no shutdown
-
-interface GigabitEthernet0/1
- ip address 192.168.0.2 255.255.255.252
- duplex auto
- speed auto
- no shutdown
-
-interface GigabitEthernet0/2
- ip address 192.168.0.5 255.255.255.252
- duplex auto
- speed auto
- no shutdown
-
-! Routage statique : par défaut vers BOX, plus les routes vers chaque site
-ip route 0.0.0.0 0.0.0.0 192.168.0.1
-ip route 10.0.2.0 255.255.255.248 192.168.0.1
-ip route 192.168.10.0 255.255.255.0 192.168.0.10
-ip route 172.16.0.0 255.255.255.252 192.168.0.10
-ip route 192.168.20.0 255.255.255.0 192.168.0.6
-
-end
-wr
-
-
-########################################################
-# R-DT (Routeur du site Desktop)
-########################################################
-
-en
-conf t
-
-interface GigabitEthernet0/0
- ip address 192.168.10.254 255.255.255.0
- ip helper-address 172.16.0.1
- duplex auto
- speed auto
- no shutdown
-
-interface GigabitEthernet0/1
- ip address 192.168.0.10 255.255.255.252
- duplex auto
- speed auto
- no shutdown
-
-interface GigabitEthernet0/2
- ip address 172.16.0.2 255.255.255.252
- duplex auto
- speed auto
- no shutdown
-
-! Routage statique : tout ce qui n'est pas local part vers R-Central
-ip route 10.0.2.0 255.255.255.248 192.168.0.9
-ip route 192.168.20.0 255.255.255.0 192.168.0.9
-ip route 0.0.0.0 0.0.0.0 192.168.0.9
-
-end
-wr
-
-
-########################################################
-# R-LT (Routeur du site Laptop)
-########################################################
-
-en
-conf t
-
-interface GigabitEthernet0/0
- ip address 192.168.0.6 255.255.255.252
- duplex auto
- speed auto
- no shutdown
-
-interface GigabitEthernet0/1
- ip address 192.168.20.254 255.255.255.0
- ip helper-address 172.16.0.1
- duplex auto
- speed auto
- no shutdown
-
-! Routage statique : tout ce qui n'est pas local part vers R-Central
-ip route 172.16.0.0 255.255.255.252 192.168.0.5
-ip route 10.0.2.0 255.255.255.248 192.168.0.5
-ip route 192.168.10.0 255.255.255.0 192.168.0.5
-ip route 0.0.0.0 0.0.0.0 192.168.0.5
-
-end
-wr
-
+---
+*Projet réalisé dans le cadre de la formation TSSR. Environnement de simulation (Cisco Packet Tracer).*
