@@ -1,0 +1,199 @@
+========================================================
+PROJET OSPF - CONFIGS CLI
+Formation TSSR - Cisco Packet Tracer
+========================================================
+
+
+########################################################
+# SW1 (Zone 1 - Commutateur L3, Area 1)
+########################################################
+
+enable
+conf t
+
+vlan 11
+ name vlan_11
+vlan 12
+ name vlan_12
+exit
+
+interface FastEthernet0/23
+ switchport mode access
+ switchport access vlan 12
+
+interface FastEthernet0/24
+ switchport mode access
+ switchport access vlan 11
+
+interface Vlan11
+ mac-address 0060.3e41.4b01
+ ip address 192.168.11.254 255.255.255.0
+ no shutdown
+
+interface Vlan12
+ mac-address 0060.3e41.4b02
+ ip address 192.168.12.254 255.255.255.0
+ no shutdown
+
+ip routing
+
+interface FastEthernet0/22
+ no switchport
+ ip address 192.168.10.1 255.255.255.0
+ no shutdown
+exit
+
+router ospf 1
+ router-id 0.0.1.1
+ log-adjacency-changes
+ network 192.168.10.0 0.0.0.255 area 1
+ network 192.168.11.0 0.0.0.255 area 1
+ network 192.168.12.0 0.0.0.255 area 1
+
+end
+wr
+
+
+########################################################
+# SW2 (Zone 2 - Commutateur L3, Area 2)
+########################################################
+
+enable
+conf t
+
+vlan 21
+ name vlan_21
+vlan 22
+ name vlan_22
+exit
+
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 21
+
+interface FastEthernet0/2
+ switchport mode access
+ switchport access vlan 22
+
+interface Vlan21
+ ip address 192.168.21.254 255.255.255.0
+ no shutdown
+
+interface Vlan22
+ ip address 192.168.22.254 255.255.255.0
+ no shutdown
+
+ip routing
+
+interface FastEthernet0/3
+ no switchport
+ ip address 192.168.20.1 255.255.255.0
+ no shutdown
+exit
+
+router ospf 02
+ router-id 0.0.2.2
+ network 192.168.20.0 0.0.0.255 area 2
+ network 192.168.21.0 0.0.0.255 area 2
+ network 192.168.22.0 0.0.0.255 area 2
+
+end
+wr
+
+
+########################################################
+# SW3 (Zone 3 - Commutateur L3, Area 3)
+########################################################
+
+enable
+conf t
+
+vlan 31
+ name vlan_31
+vlan 32
+ name vlan_32
+exit
+
+interface FastEthernet0/23
+ switchport mode access
+ switchport access vlan 32
+
+interface FastEthernet0/24
+ switchport mode access
+ switchport access vlan 31
+
+interface Vlan31
+ ip address 192.168.31.254 255.255.255.0
+ no shutdown
+
+interface Vlan32
+ ip address 192.168.32.254 255.255.255.0
+ no shutdown
+
+ip routing
+
+interface FastEthernet0/22
+ no switchport
+ ip address 192.168.30.1 255.255.255.0
+ no shutdown
+exit
+
+router ospf 03
+ router-id 0.0.3.3
+ network 192.168.30.0 0.0.0.255 area 3
+ network 192.168.31.0 0.0.0.255 area 3
+ network 192.168.32.0 0.0.0.255 area 3
+
+end
+wr
+
+
+########################################################
+# R1 (Routeur de backbone - Area 0 / rattachement Area 1)
+########################################################
+
+enable
+conf t
+
+router ospf 1
+ router-id 1.1.0.0
+ network 192.168.10.0 0.0.0.255 area 1
+ network 10.0.1.0 0.0.0.3 area 0
+ network 10.0.3.0 0.0.0.3 area 0
+
+end
+wr
+
+
+########################################################
+# R2 (Routeur de backbone - Area 0 / rattachement Area 2)
+########################################################
+
+enable
+conf t
+
+router ospf 2
+ router-id 2.2.0.0
+ network 192.168.20.0 0.0.0.255 area 2
+ network 10.0.1.0 0.0.0.3 area 0
+ network 10.0.2.0 0.0.0.3 area 0
+
+end
+wr
+
+
+########################################################
+# R3 (Routeur de backbone - Area 0 / rattachement Area 3)
+########################################################
+
+enable
+conf t
+
+router ospf 3
+ router-id 3.3.0.0
+ network 192.168.30.0 0.0.0.255 area 3
+ network 10.0.2.0 0.0.0.3 area 0
+ network 10.0.3.0 0.0.0.3 area 0
+
+end
+wr
