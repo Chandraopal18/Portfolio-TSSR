@@ -1,0 +1,123 @@
+========================================================
+PROJET NAT STATIQUE / PORT FORWARDING - CONFIGS CLI
+Formation TSSR - Cisco Packet Tracer
+========================================================
+NOTE : Les switches (Sw-IT, Switch0, Sw-ggl) sont laissés en
+configuration par défaut et ne sont donc pas détaillés ci-dessous.
+Le serveur web interne (Hb-Web) et les postes clients sont
+configurés via l'interface graphique (pas de CLI IOS).
+========================================================
+
+
+########################################################
+# FIREWALL (Pare-feu périmétrique - NAT overload + NAT statique)
+########################################################
+
+en
+conf t
+
+interface FastEthernet0/0
+ ip address 192.168.3.2 255.255.255.252
+ ip nat inside
+ duplex auto
+ speed auto
+ no shutdown
+
+interface FastEthernet0/1
+ ip address 45.25.23.101 255.255.255.0
+ ip nat outside
+ duplex auto
+ speed auto
+ no shutdown
+
+interface Ethernet1/0
+ ip address 10.0.0.6 255.255.255.248
+ ip nat inside
+ duplex auto
+ speed auto
+ no shutdown
+
+! NAT overload (PAT) : sortie Internet mutualisée pour les réseaux internes
+ip nat inside source list 1 interface FastEthernet0/1 overload
+
+! NAT statique + Port Forwarding : publication du serveur web interne
+! Le port 80 de 10.0.0.1 (Hb-Web) devient accessible via 45.25.23.101:80
+ip nat inside source static tcp 10.0.0.1 80 45.25.23.101 80
+
+! Routage statique
+ip route 0.0.0.0 0.0.0.0 45.25.23.254
+ip route 192.168.1.0 255.255.255.240 192.168.3.1
+ip route 192.168.20.0 255.255.255.0 192.168.3.1
+
+! ACL définissant les réseaux internes autorisés à être traduits (NAT)
+access-list 1 permit 192.168.3.0 0.0.0.3
+access-list 1 permit 10.0.0.0 0.0.0.7
+access-list 1 permit 192.168.20.0 0.0.0.255
+access-list 1 permit 192.168.1.0 0.0.0.15
+
+end
+wr
+
+
+########################################################
+# R-INTERNE (Routeur interne - Admin / Clients)
+########################################################
+
+en
+conf t
+
+interface FastEthernet0/0
+ ip address 192.168.1.14 255.255.255.240
+ ip nat inside
+ duplex auto
+ speed auto
+ no shutdown
+
+interface FastEthernet0/1
+ ip address 192.168.3.1 255.255.255.252
+ duplex auto
+ speed auto
+ no shutdown
+
+interface FastEthernet1/0
+ ip address 192.168.20.254 255.255.255.0
+ ip nat inside
+ duplex auto
+ speed auto
+ no shutdown
+
+! Routage dynamique RIP pour les réseaux locaux
+router rip
+
+! Route par défaut vers le Firewall
+ip route 0.0.0.0 0.0.0.0 192.168.3.2
+
+! ACL (référencée pour cohérence avec le NAT du pare-feu)
+access-list 1 permit 192.168.1.0 0.0.0.15
+access-list 1 permit 192.168.20.0 0.0.0.255
+
+end
+wr
+
+
+########################################################
+# R-GGL (Routeur simulant le fournisseur d'accès / Internet)
+########################################################
+
+en
+conf t
+
+interface FastEthernet0/0
+ ip address 45.25.23.254 255.255.255.0
+ duplex auto
+ speed auto
+ no shutdown
+
+interface FastEthernet0/1
+ ip address 25.25.25.254 255.255.255.0
+ duplex auto
+ speed auto
+ no shutdown
+
+end
+wr
