@@ -1,0 +1,97 @@
+========================================================
+PROJET VLAN SEGMENTATION - CONFIGS CLI
+Formation TSSR - Cisco Packet Tracer
+========================================================
+
+
+########################################################
+# SW-SALLE1
+########################################################
+
+enable
+conf t
+
+vlan 10
+ name Accueil
+vlan 20
+ name Atelier
+exit
+
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 10
+
+interface FastEthernet0/2
+ switchport mode access
+ switchport access vlan 20
+
+interface FastEthernet0/3
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+
+end
+wr
+
+
+########################################################
+# SW-SALLE2
+########################################################
+
+enable
+conf t
+
+vlan 10
+ name Accueil
+vlan 20
+ name Atelier
+vlan 30
+ name Design
+exit
+
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 20
+
+interface FastEthernet0/2
+ switchport mode access
+ switchport access vlan 30
+
+interface FastEthernet0/3
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+
+interface FastEthernet0/4
+ switchport mode trunk
+ switchport trunk allowed vlan 10,30
+
+end
+wr
+
+
+########################################################
+# SW-SALLE3
+########################################################
+
+enable
+conf t
+
+vlan 10
+ name Accueil
+vlan 30
+ name Design
+exit
+
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 30
+
+interface FastEthernet0/2
+ switchport mode access
+ switchport access vlan 10
+
+interface FastEthernet0/3
+ switchport mode trunk
+ switchport trunk allowed vlan 10,30
+
+end
+wr
