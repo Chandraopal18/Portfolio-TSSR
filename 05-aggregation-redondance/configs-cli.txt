@@ -1,0 +1,271 @@
+========================================================
+PROJET AGREGATION DE LIENS & REDONDANCE DE PASSERELLE
+CONFIGS CLI - Formation TSSR - Cisco Packet Tracer
+========================================================
+NOTE : Le routeur EXTERIEUR (simulant le réseau au-delà de
+R0/R1) est hors périmètre de ce TP, centré sur l'EtherChannel
+et le HSRP côté LAN interne.
+========================================================
+
+
+########################################################
+# SW-SITE1
+########################################################
+
+enable
+conf t
+
+vlan 10
+ name vlan10
+vlan 20
+ name vlan20
+exit
+
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 20
+
+interface FastEthernet0/2
+ switchport mode access
+ switchport access vlan 10
+
+interface range FastEthernet0/3-4
+ shutdown
+ channel-group 1 mode active
+ no shutdown
+exit
+
+interface Port-channel1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+
+end
+wr
+
+
+########################################################
+# SW-SITE2
+########################################################
+
+enable
+conf t
+
+vlan 10
+ name vlan10
+vlan 20
+ name vlan20
+exit
+
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 20
+
+interface FastEthernet0/2
+ switchport mode access
+ switchport access vlan 10
+
+interface range FastEthernet0/3-4
+ shutdown
+ channel-group 1 mode active
+ no shutdown
+exit
+
+interface Port-channel1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+
+end
+wr
+
+
+########################################################
+# SW-CENTRAL (Commutateur d'agrégation)
+########################################################
+
+enable
+conf t
+
+vlan 10
+ name vlan10
+vlan 20
+ name vlan20
+vlan 51
+ name vlan51
+vlan 42
+ name vlan42
+exit
+
+! EtherChannel vers Sw-site1
+interface range FastEthernet0/3-4
+ shutdown
+ channel-group 1 mode active
+ no shutdown
+
+interface Port-channel1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+
+! EtherChannel vers Sw-srv
+interface range FastEthernet0/5-6
+ shutdown
+ channel-group 2 mode active
+ no shutdown
+
+interface Port-channel2
+ switchport mode trunk
+ switchport trunk allowed vlan 42,51
+
+! EtherChannel vers Sw-site2
+interface range FastEthernet0/7-8
+ shutdown
+ channel-group 3 mode active
+ no shutdown
+
+interface Port-channel3
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20
+
+! Liaisons individuelles (non agrégées) vers R0 et R1
+interface FastEthernet0/1
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,42,51
+ no shutdown
+
+interface FastEthernet0/2
+ switchport mode trunk
+ switchport trunk allowed vlan 10,20,42,51
+ no shutdown
+
+end
+wr
+
+
+########################################################
+# SW-SRV (Site serveurs)
+########################################################
+
+enable
+conf t
+
+vlan 42
+ name vlan42
+vlan 51
+ name vlan51
+exit
+
+interface FastEthernet0/1
+ switchport mode access
+ switchport access vlan 51
+
+interface FastEthernet0/2
+ switchport mode access
+ switchport access vlan 51
+
+interface FastEthernet0/24
+ switchport mode access
+ switchport access vlan 42
+
+interface range FastEthernet0/3-4
+ shutdown
+ channel-group 1 mode active
+ no shutdown
+exit
+
+interface Port-channel1
+ switchport mode trunk
+ switchport trunk allowed vlan 42,51
+
+end
+wr
+
+
+########################################################
+# R0 (Routeur passerelle - HSRP ACTIF, priorité 110)
+########################################################
+
+enable
+conf t
+
+interface FastEthernet0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.252 255.255.255.0
+ ip helper-address 192.168.51.2
+ standby 10 ip 192.168.10.254
+ standby 10 priority 110
+ standby 10 preempt
+ no shutdown
+
+interface FastEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.20.252 255.255.255.0
+ ip helper-address 192.168.51.2
+ standby 20 ip 192.168.20.254
+ standby 20 priority 110
+ standby 20 preempt
+ no shutdown
+
+interface FastEthernet0/0.42
+ encapsulation dot1Q 42
+ ip address 192.168.42.252 255.255.255.0
+ standby 42 ip 192.168.42.254
+ standby 42 priority 110
+ standby 42 preempt
+ no shutdown
+
+interface FastEthernet0/0.51
+ encapsulation dot1Q 51
+ ip address 192.168.51.252 255.255.255.0
+ standby 51 ip 192.168.51.254
+ standby 51 priority 110
+ standby 51 preempt
+ no shutdown
+
+interface FastEthernet0/0
+ no shutdown
+
+end
+wr
+
+
+########################################################
+# R1 (Routeur passerelle - HSRP SECONDAIRE, priorité par défaut)
+########################################################
+
+enable
+conf t
+
+interface FastEthernet0/0.10
+ encapsulation dot1Q 10
+ ip address 192.168.10.253 255.255.255.0
+ ip helper-address 192.168.51.2
+ standby 10 ip 192.168.10.254
+ standby 10 preempt
+ no shutdown
+
+interface FastEthernet0/0.20
+ encapsulation dot1Q 20
+ ip address 192.168.20.253 255.255.255.0
+ ip helper-address 192.168.51.2
+ standby 20 ip 192.168.20.254
+ standby 20 preempt
+ no shutdown
+
+interface FastEthernet0/0.42
+ encapsulation dot1Q 42
+ ip address 192.168.42.253 255.255.255.0
+ standby 42 ip 192.168.42.254
+ standby 42 preempt
+ no shutdown
+
+interface FastEthernet0/0.51
+ encapsulation dot1Q 51
+ ip address 192.168.51.253 255.255.255.0
+ standby 51 ip 192.168.51.254
+ standby 51 preempt
+ no shutdown
+
+interface FastEthernet0/0
+ no shutdown
+
+end
+wr
