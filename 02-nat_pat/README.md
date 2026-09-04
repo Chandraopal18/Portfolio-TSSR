@@ -1,4 +1,4 @@
-# Projet NAT — Traduction d'adresses réseau (NAT surchargé / PAT)
+# Projet NAT_PAT — Traduction d'adresses réseau (NAT surchargé / PAT)
 
 *Un second projet complémentaire sur le NAT statique et le port forwarding est en préparation pour compléter cette démonstration avec l'exposition ciblée d'un service.*
 
@@ -38,8 +38,8 @@ Le réseau comprend un site "Serveur Web" interne, un cœur de réseau (R-Centra
 
 **Topologie générale :**
 
-![Topologie NAT - partie 1](topologie-1.png)
-![Topologie NAT - partie 2](topologie-2.png)
+![Topologie NAT_PAT - partie 1](topologie-1.png)
+![Topologie NAT_PAT - partie 2](topologie-2.png)
 
 ## Compétences techniques mobilisées
 
@@ -52,7 +52,7 @@ Le réseau comprend un site "Serveur Web" interne, un cœur de réseau (R-Centra
 
 ## Fichiers
 
-- `nat.pkt` — Simulation Cisco Packet Tracer complète
+- `nat_pat.pkt` — Simulation Cisco Packet Tracer complète
 - `configs-cli.txt` — Extraits de configuration CLI (NAT, ACL, routage, DHCP relay)
 
 ---
